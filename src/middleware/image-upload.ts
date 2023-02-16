@@ -1,6 +1,6 @@
-const multer = require("multer");
-const path = require("path");
-const os = require("os")
+import multer from "multer";
+import path from "path";
+import os from "os";
 
 const imageStorage = multer.diskStorage({
   // Destination to store image

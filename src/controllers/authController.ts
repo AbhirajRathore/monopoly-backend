@@ -36,6 +36,7 @@ const sendToken = async (user:any, walletAddress:string, userAgent:any, ip:any) 
 export const walletConnect = async (req:any, res:any) => {
   try {
     const { walletAddress } = req.body
+    console.log(req.body)
     const vta = await verifyTokenAddress(req.body.token, req.body.message, walletAddress)
 
     if (!vta) {
@@ -44,23 +45,27 @@ export const walletConnect = async (req:any, res:any) => {
       })
     }
 
-    const wallets = [walletAddress]
+    const wallet_address = walletAddress
     const ip = req.ip
     const userAgent = req.headers['user-agent']
     if (walletAddress) {
       const regex = new RegExp(`^${walletAddress.trim()}$`, 'ig')
       const walletAlreadyExists = await Users.findOne({
-        wallets: { $regex: regex }
+        wallet_address: { $regex: regex }
       })
       if (walletAlreadyExists && !!walletAddress) {
         const t = await sendToken(walletAlreadyExists, walletAddress, userAgent, ip)
         res.status(StatusCodes.OK).json({
-          accessToken: t.token,
+          token: t.token,
+          type : "Bearer",
           user: {
-            username: t.user.username,
-            userId: t.user._id,
-            wallet_address: walletAddress
-          }
+            id: t.user._id,
+            username: walletAlreadyExists.username,
+            score: walletAlreadyExists.score, 
+            walletAddress: walletAddress,
+            friends : walletAlreadyExists.friends,
+            avatar: walletAlreadyExists.avatar
+      }
         })
 
         return
@@ -70,8 +75,7 @@ export const walletConnect = async (req:any, res:any) => {
     const verificationToken = randomBytes(40).toString('hex')
     console.log('verificationToken: ', verificationToken)
     const createObj = {
-      wallets,
-      username: walletAddress,
+      wallet_address,
       profileUrl: '',
       backgroundUrl: '',
       verificationToken
@@ -82,12 +86,18 @@ export const walletConnect = async (req:any, res:any) => {
     const t = await sendToken(user, walletAddress, userAgent, ip)
     console.log('t: ', t)
 
+    // the invite code would come in place here //todo
+
     res.status(StatusCodes.OK).json({
-      accessToken: t.token,
+      token: t.token,
+      type : "Bearer",
       user: {
-        username: t.user.username,
-        userId: t.user._id,
-        wallet_address: walletAddress
+        id: t.user._id,
+        username: user.username,
+        score: user.score, 
+        walletAddress: walletAddress,
+        friends : user.friends,
+        avatar: user.avatar
       }
     })
   } catch (err) {
