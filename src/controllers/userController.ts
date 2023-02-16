@@ -32,37 +32,22 @@ export const getSingleUSer = async (req:any, res:any) => {
   }
 };
 
-// router.put('/', upload.single('avatar'), async (req, res) => {
-//   const user = await get_current_user(req);
-//   const { username, score, balance } = req.body;
-//   let avatarUrl;
+export const upload_avatar= async (req:any, res:any) => {
+  try {
+    const userId = req.user.userId;
+    const baseUrl = process.env.SERVER_URL + '/images/'; 
+    const { username, score, balance } = req.body;
+    let avatarUrl = baseUrl + req.files?.image[0].filename;
 
-//   const resolutions = ['image/png', 'image/jpg', 'image/jpeg'];
-
-//   if (req.file) {
-//     if (resolutions.includes(req.file.mimetype)) {
-//       const fileType = req.file.originalname.split('.').pop().toLowerCase();
-//       const fileName = `avatar/${user.id}-${generate_digits()}.${fileType}`;
-//       upload_avatar(req.file.buffer, fileName);
-//       avatarUrl = storage_base_url + fileName;
-//     } else {
-//       throw new Error('Available image extensions: .png, .jpg, .jpeg');
-//     }
-//   } else if (!user) {
-//     throw new Error('User not found in the database');
-//   }
-
-//   const payload = new UpdateUser({
-//     username,
-//     score,
-//     balance: balance && user.balance + balance,
-//     avatar: avatarUrl,
-//   }).toJSON();
-
-//   if (Object.keys(payload).length > 0) {
-//     await db.put(user, payload);
-//   }
-
-//   res.json({ ...user.toJSON(), ...payload });
-// });
+    const payload = await Users.updateOne({_id:userId},{
+      username,
+      score,
+      $inc: {balance: balance,},
+      avatar: avatarUrl,
+    })
+    res.status(STATUS_CODES.OK).json({success:true, acknowledged: payload?.acknowledged,});
+  } catch (error) {
+    res.status(STATUS_CODES.BadRequestError).json({})
+  }
+}
 

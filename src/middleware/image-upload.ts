@@ -16,7 +16,7 @@ const imageStorage = multer.diskStorage({
   },
 });
 
-const imageUploadPinata = multer({
+export const imageUploadPinata = multer({
   storage: imageStorage,
   limits: {
     fileSize: 30000000, // 30000000 Bytes = 30 MB
@@ -46,7 +46,7 @@ const imageDiskStorage = multer.diskStorage({
   },
 });
 
-const imageUploadDisk = multer({
+export const imageUploadDisk = multer({
   storage: imageDiskStorage,
   limits: {
     fileSize: 10000000, // 10000000 Bytes = 10 MB
@@ -59,5 +59,3 @@ const imageUploadDisk = multer({
     cb(null, true);
   },
 });
-
-module.exports = {imageUploadPinata, imageUploadDisk};
